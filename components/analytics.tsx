@@ -3,9 +3,10 @@
 import { useWorkout } from "./providers/workout-provider"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Trophy, AlertTriangle, Dumbbell } from "lucide-react"
+import { Trophy, AlertTriangle, Dumbbell, Clock } from "lucide-react"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { format } from "date-fns"
+import { format, differenceInDays } from "date-fns"
+import { cn } from "@/lib/utils"
 
 // Exercise suggestions by muscle group
 const EXERCISE_SUGGESTIONS: Record<string, Array<{ name: string; description: string }>> = {
@@ -57,8 +58,39 @@ export default function Analytics() {
   const mostWorkedMuscle = getMostWorkedMuscle()
   const notWorkedMuscles = getNotWorkedMuscles()
 
-  // Sort workouts by date (most recent first)
-  const sortedWorkouts = [...workouts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  // Get workouts from the last 7 days
+  const recentWorkouts = workouts
+    .filter(workout => {
+      const workoutDate = new Date(workout.date)
+      const sevenDaysAgo = new Date()
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+      return workoutDate >= sevenDaysAgo
+    })
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+
+  // Function to get the last workout date for a muscle
+  const getLastWorkoutInfo = (muscle: string) => {
+    const lastWorkout = workouts
+      .filter(workout => workout.exercises.some(ex => ex.muscleGroup === muscle))
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0]
+
+    if (!lastWorkout) return null
+
+    const daysAgo = differenceInDays(new Date(), new Date(lastWorkout.date))
+    
+    // Color coding based on days
+    let colorClass = ""
+    if (daysAgo <= 1) colorClass = "bg-green-500"
+    else if (daysAgo === 2) colorClass = "bg-yellow-500"
+    else if (daysAgo === 3) colorClass = "bg-orange-500"
+    else colorClass = "bg-red-500"
+
+    return {
+      date: lastWorkout.date,
+      daysAgo,
+      colorClass
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -110,21 +142,39 @@ export default function Analytics() {
           </CardHeader>
           <CardContent>
             <Accordion type="single" collapsible className="w-full">
-              {notWorkedMuscles.map((muscle) => (
-                <AccordionItem key={muscle} value={muscle}>
-                  <AccordionTrigger className="text-lg font-medium">{muscle}</AccordionTrigger>
-                  <AccordionContent>
-                    <div className="space-y-4 p-2">
-                      {EXERCISE_SUGGESTIONS[muscle]?.map((exercise, index) => (
-                        <div key={index} className="border-l-2 border-primary pl-4">
-                          <h4 className="font-medium">{exercise.name}</h4>
-                          <p className="text-sm text-muted-foreground">{exercise.description}</p>
+              {notWorkedMuscles.map((muscle) => {
+                const lastWorkout = getLastWorkoutInfo(muscle)
+                return (
+                  <AccordionItem key={muscle} value={muscle}>
+                    <AccordionTrigger className="text-lg font-medium">
+                      <div className="flex items-center justify-between w-full">
+                        <span>{muscle}</span>
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4" />
+                          <span className={cn(
+                            "text-sm px-2 py-1 rounded-full text-white",
+                            lastWorkout ? lastWorkout.colorClass : "bg-white text-gray-500 border"
+                          )}>
+                            {lastWorkout 
+                              ? `Last worked ${lastWorkout.daysAgo} ${lastWorkout.daysAgo === 1 ? 'day' : 'days'} ago`
+                              : "Never worked out"}
+                          </span>
                         </div>
-                      ))}
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="space-y-4 p-2">
+                        {EXERCISE_SUGGESTIONS[muscle]?.map((exercise, index) => (
+                          <div key={index} className="border-l-2 border-primary pl-4">
+                            <h4 className="font-medium">{exercise.name}</h4>
+                            <p className="text-sm text-muted-foreground">{exercise.description}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                )
+              })}
             </Accordion>
           </CardContent>
         </Card>
@@ -156,14 +206,14 @@ export default function Analytics() {
         </CardContent>
       </Card>
 
-      {sortedWorkouts.length > 0 && (
+      {recentWorkouts.length > 0 ? (
         <Card>
           <CardHeader>
-            <CardTitle>Recent Workouts</CardTitle>
+            <CardTitle>Recent Workouts (Last 7 Days)</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {sortedWorkouts.slice(0, 5).map((workout) => (
+              {recentWorkouts.map((workout) => (
                 <div key={workout.id} className="border rounded-lg p-4">
                   <div className="flex justify-between items-center mb-2">
                     <h3 className="font-medium">{format(new Date(workout.date), "MMMM d, yyyy")}</h3>
@@ -183,6 +233,17 @@ export default function Analytics() {
                 </div>
               ))}
             </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Workouts (Last 7 Days)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground text-center py-4">
+              No workouts recorded in the last 7 days
+            </p>
           </CardContent>
         </Card>
       )}

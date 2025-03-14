@@ -4,11 +4,7 @@ import { useState } from "react"
 import { useWorkout } from "./providers/workout-provider"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { format } from "date-fns"
-import { CalendarIcon } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { format, subDays } from "date-fns"
 import { useToast } from "@/components/ui/use-toast"
 import { ExerciseForm } from "./exercise-form"
 import type { Exercise } from "./providers/workout-provider"
@@ -59,20 +55,25 @@ export default function WorkoutEntry() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">Workout Date</label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn("w-full justify-start text-left font-normal", !date && "text-muted-foreground")}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date ? format(date, "PPP") : <span>Pick a date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar mode="single" selected={date} onSelect={(date) => date && setDate(date)} initialFocus />
-              </PopoverContent>
-            </Popover>
+            <div className="flex gap-4">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setDate(new Date())}
+              >
+                Today
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setDate(subDays(new Date(), 1))}
+              >
+                Yesterday
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground mt-2">
+              Selected date: {format(date, "MMMM d, yyyy")}
+            </p>
           </div>
         </CardContent>
       </Card>

@@ -28,6 +28,9 @@ interface ExerciseFormProps {
 export function ExerciseForm({ onAddExercise }: ExerciseFormProps) {
   const [activeTab, setActiveTab] = useState("predefined")
   const [selectedMuscleGroup, setSelectedMuscleGroup] = useState<string>("")
+  const [selectedExercise, setSelectedExercise] = useState<string>("")
+  const [predefinedSets, setPredefinedSets] = useState<string>("3") // Default value
+  const [predefinedReps, setPredefinedReps] = useState<string>("10") // Default value
   const [customExercise, setCustomExercise] = useState({
     name: "",
     muscleGroup: "",
@@ -35,13 +38,22 @@ export function ExerciseForm({ onAddExercise }: ExerciseFormProps) {
     reps: "",
   })
 
-  const handleAddPredefined = (exerciseName: string) => {
-    onAddExercise({
-      name: exerciseName,
-      muscleGroup: selectedMuscleGroup,
-      sets: 3,
-      reps: 10,
-    })
+  const handleAddPredefined = () => {
+    if (selectedExercise && selectedMuscleGroup && predefinedSets && predefinedReps) {
+      onAddExercise({
+        name: selectedExercise,
+        muscleGroup: selectedMuscleGroup,
+        sets: Number.parseInt(predefinedSets),
+        reps: Number.parseInt(predefinedReps),
+      })
+      
+      // Reset selected exercise but keep muscle group
+      setSelectedExercise("")
+    }
+  }
+
+  const handleSelectExercise = (exerciseName: string) => {
+    setSelectedExercise(exerciseName)
   }
 
   const handleAddCustom = () => {
@@ -99,14 +111,52 @@ export function ExerciseForm({ onAddExercise }: ExerciseFormProps) {
                   {PREDEFINED_EXERCISES[selectedMuscleGroup as keyof typeof PREDEFINED_EXERCISES].map((exercise) => (
                     <Button
                       key={exercise}
-                      variant="outline"
+                      variant={selectedExercise === exercise ? "default" : "outline"}
                       className="justify-start"
-                      onClick={() => handleAddPredefined(exercise)}
+                      onClick={() => handleSelectExercise(exercise)}
                     >
                       {exercise}
                     </Button>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {selectedExercise && (
+              <div className="mt-4 space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="predefinedSets">Sets</Label>
+                    <Input
+                      id="predefinedSets"
+                      type="number"
+                      min="1"
+                      value={predefinedSets}
+                      onChange={(e) => setPredefinedSets(e.target.value)}
+                      placeholder="3"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="predefinedReps">Reps</Label>
+                    <Input
+                      id="predefinedReps"
+                      type="number"
+                      min="1"
+                      value={predefinedReps}
+                      onChange={(e) => setPredefinedReps(e.target.value)}
+                      placeholder="10"
+                    />
+                  </div>
+                </div>
+
+                <Button 
+                  className="w-full" 
+                  onClick={handleAddPredefined}
+                  disabled={!predefinedSets || !predefinedReps}
+                >
+                  Add Exercise
+                </Button>
               </div>
             )}
           </TabsContent>
@@ -150,7 +200,7 @@ export function ExerciseForm({ onAddExercise }: ExerciseFormProps) {
                   min="1"
                   value={customExercise.sets}
                   onChange={(e) => setCustomExercise({ ...customExercise, sets: e.target.value })}
-                  placeholder="e.g., 3"
+                  placeholder="3"
                 />
               </div>
 
@@ -162,7 +212,7 @@ export function ExerciseForm({ onAddExercise }: ExerciseFormProps) {
                   min="1"
                   value={customExercise.reps}
                   onChange={(e) => setCustomExercise({ ...customExercise, reps: e.target.value })}
-                  placeholder="e.g., 10"
+                  placeholder="10"
                 />
               </div>
             </div>
@@ -182,4 +232,3 @@ export function ExerciseForm({ onAddExercise }: ExerciseFormProps) {
     </Card>
   )
 }
-
