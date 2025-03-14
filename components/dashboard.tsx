@@ -3,7 +3,6 @@
 import { useWorkout } from "./providers/workout-provider"
 import { MuscleVisualization } from "./muscle-visualization"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Dumbbell, Trophy, AlertTriangle } from "lucide-react"
 
 export default function Dashboard() {
@@ -14,6 +13,22 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Persistent Welcome Message */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Dumbbell className="h-5 w-5 text-primary" />
+            Welcome to FitTrack!
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">
+            Start by logging your first workout using the "Log Workout" tab.
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Muscle Visualization */}
       <Card>
         <CardHeader>
           <CardTitle>Muscle Visualization</CardTitle>
@@ -23,6 +38,7 @@ export default function Dashboard() {
         </CardContent>
       </Card>
 
+      {/* Most Worked Muscle & Muscles to Focus On */}
       <div className="grid gap-4 md:grid-cols-2">
         {mostWorkedMuscle && (
           <Card>
@@ -60,15 +76,6 @@ export default function Dashboard() {
           </Card>
         )}
       </div>
-
-      {workouts?.length === 0 && (
-        <Alert>
-          <Dumbbell className="h-4 w-4" />
-          <AlertTitle>Welcome to FitTrack!</AlertTitle>
-          <AlertDescription>Start by logging your first workout using the "Log Workout" tab.</AlertDescription>
-        </Alert>
-      )}
     </div>
   )
 }
-

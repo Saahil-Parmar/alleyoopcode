@@ -5,11 +5,23 @@ import { WorkoutProvider } from "@/components/providers/workout-provider"
 import Dashboard from "@/components/dashboard"
 import WorkoutEntry from "@/components/workout-entry"
 import Analytics from "@/components/analytics"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import Link from "next/link"
+import { cn } from "@/lib/utils"
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("dashboard")
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case "dashboard":
+        return <Dashboard />
+      case "workout":
+        return <WorkoutEntry />
+      case "analytics":
+        return <Analytics />
+      default:
+        return <Dashboard />
+    }
+  }
 
   return (
     <WorkoutProvider>
@@ -19,26 +31,43 @@ export default function Home() {
           <p className="text-center text-muted-foreground">Track your fitness journey and optimize your workouts</p>
         </header>
 
-        <nav className="grid w-full grid-cols-3 gap-4">
-          <Link 
-            href="/dashboard" 
-            className="flex items-center justify-center p-4 text-center rounded-lg border hover:bg-muted"
+        <nav className="flex justify-center gap-4 mb-8">
+          <button
+            onClick={() => setActiveTab("dashboard")}
+            className={cn(
+              "px-6 py-2 rounded-lg border transition-colors",
+              activeTab === "dashboard"
+                ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                : "hover:bg-muted"
+            )}
           >
             Dashboard
-          </Link>
-          <Link 
-            href="/workout" 
-            className="flex items-center justify-center p-4 text-center rounded-lg border hover:bg-muted"
+          </button>
+          <button
+            onClick={() => setActiveTab("workout")}
+            className={cn(
+              "px-6 py-2 rounded-lg border transition-colors",
+              activeTab === "workout"
+                ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                : "hover:bg-muted"
+            )}
           >
             Log Workout
-          </Link>
-          <Link 
-            href="/analytics" 
-            className="flex items-center justify-center p-4 text-center rounded-lg border hover:bg-muted"
+          </button>
+          <button
+            onClick={() => setActiveTab("analytics")}
+            className={cn(
+              "px-6 py-2 rounded-lg border transition-colors",
+              activeTab === "analytics"
+                ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                : "hover:bg-muted"
+            )}
           >
             Analytics
-          </Link>
+          </button>
         </nav>
+
+        {renderContent()}
       </main>
     </WorkoutProvider>
   )
