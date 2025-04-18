@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -8,6 +8,9 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { Exercise } from "./providers/workout-provider"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { searchExercises, type ExerciseResult } from "@/lib/api"
+import { useDebounce } from "@/lib/hooks/use-debounce"
+import { Loader2 } from "lucide-react"
 
 // Predefined exercises by muscle group
 const PREDEFINED_EXERCISES = {
@@ -19,6 +22,27 @@ const PREDEFINED_EXERCISES = {
   Triceps: ["Tricep Extension", "Tricep Pushdown", "Skull Crusher", "Dips"],
   Abs: ["Crunches", "Leg Raises", "Plank", "Russian Twist", "Ab Rollout"],
   Calves: ["Calf Raise", "Seated Calf Raise", "Donkey Calf Raise"],
+}
+
+// Mapping API muscle names to your muscle group options
+const MUSCLE_GROUP_MAPPING: Record<string, string> = {
+  'abdominals': 'Abs',
+  'biceps': 'Biceps',
+  'triceps': 'Triceps',
+  'lats': 'Back',
+  'middle_back': 'Back',
+  'lower_back': 'Back',
+  'chest': 'Chest',
+  'calves': 'Calves',
+  'quadriceps': 'Legs',
+  'hamstrings': 'Legs',
+  'glutes': 'Legs',
+  'traps': 'Shoulders',
+  'shoulders': 'Shoulders',
+  'forearms': 'Arms',
+  'abductors': 'Legs',
+  'adductors': 'Legs',
+  'neck': 'Shoulders'
 }
 
 interface ExerciseFormProps {
@@ -37,6 +61,24 @@ export function ExerciseForm({ onAddExercise }: ExerciseFormProps) {
     sets: "",
     reps: "",
   })
+  const [searchResults, setSearchResults] = useState<ExerciseResult[]>([])
+  const [isSearching, setIsSearching] = useState(false)
+  const debouncedSearch = useDebounce(customExercise.name, 500)
+
+  useEffect(() => {
+    async function fetchExercises() {
+      if (debouncedSearch.length >= 3) {
+        setIsSearching(true)
+        const results = await searchExercises(debouncedSearch)
+        setSearchResults(results)
+        setIsSearching(false)
+      } else {
+        setSearchResults([])
+      }
+    }
+
+    fetchExercises()
+  }, [debouncedSearch])
 
   const handleAddPredefined = () => {
     if (selectedExercise && selectedMuscleGroup && predefinedSets && predefinedReps) {
@@ -52,8 +94,19 @@ export function ExerciseForm({ onAddExercise }: ExerciseFormProps) {
     }
   }
 
-  const handleSelectExercise = (exerciseName: string) => {
-    setSelectedExercise(exerciseName)
+  const handleSelectExercise = (result: ExerciseResult) => {
+    // Capitalize the first letter of each word in the muscle name
+    const formattedMuscle = result.muscle
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+
+    setCustomExercise({
+      ...customExercise,
+      name: result.name,
+      muscleGroup: formattedMuscle,
+    })
+    setSearchResults([])
   }
 
   const handleAddCustom = () => {
@@ -65,13 +118,13 @@ export function ExerciseForm({ onAddExercise }: ExerciseFormProps) {
         reps: Number.parseInt(customExercise.reps),
       })
 
-      // Reset form
       setCustomExercise({
         name: "",
         muscleGroup: "",
         sets: "",
         reps: "",
       })
+      setSearchResults([])
     }
   }
 
@@ -113,7 +166,7 @@ export function ExerciseForm({ onAddExercise }: ExerciseFormProps) {
                       key={exercise}
                       variant={selectedExercise === exercise ? "default" : "outline"}
                       className="justify-start"
-                      onClick={() => handleSelectExercise(exercise)}
+                      onClick={() => setSelectedExercise(exercise)}
                     >
                       {exercise}
                     </Button>
@@ -164,31 +217,54 @@ export function ExerciseForm({ onAddExercise }: ExerciseFormProps) {
           <TabsContent value="custom" className="space-y-4 mt-4">
             <div className="space-y-2">
               <Label htmlFor="exerciseName">Exercise Name</Label>
-              <Input
-                id="exerciseName"
-                value={customExercise.name}
-                onChange={(e) => setCustomExercise({ ...customExercise, name: e.target.value })}
-                placeholder="e.g., Cable Crossover"
-              />
+              <div className="relative">
+                <Input
+                  id="exerciseName"
+                  value={customExercise.name}
+                  onChange={(e) => setCustomExercise({ ...customExercise, name: e.target.value })}
+                  placeholder="Search for an exercise..."
+                />
+                {isSearching && (
+                  <div className="absolute right-3 top-3">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  </div>
+                )}
+              </div>
+              
+              {searchResults.length > 0 && (
+                <div className="mt-2 border rounded-md divide-y max-h-[300px] overflow-y-auto">
+                  {searchResults.map((result, index) => (
+                    <button
+                      key={index}
+                      className="w-full px-4 py-3 text-left hover:bg-accent transition-colors"
+                      onClick={() => handleSelectExercise(result)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-medium">{result.name}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {result.muscle.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} • {result.difficulty}
+                          </div>
+                        </div>
+                        <div className="text-xs text-muted-foreground capitalize">
+                          {result.equipment}
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="customMuscleGroup">Muscle Group</Label>
-              <Select
+              <Label htmlFor="muscleGroup">Target Muscle</Label>
+              <Input
+                id="muscleGroup"
                 value={customExercise.muscleGroup}
-                onValueChange={(value) => setCustomExercise({ ...customExercise, muscleGroup: value })}
-              >
-                <SelectTrigger id="customMuscleGroup">
-                  <SelectValue placeholder="Choose muscle group" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.keys(PREDEFINED_EXERCISES).map((group) => (
-                    <SelectItem key={group} value={group}>
-                      {group}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                readOnly
+                className="bg-muted cursor-not-allowed"
+                placeholder="Will be set automatically from exercise selection"
+              />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
