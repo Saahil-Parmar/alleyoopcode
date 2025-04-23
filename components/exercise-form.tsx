@@ -58,8 +58,8 @@ export function ExerciseForm({ onAddExercise }: ExerciseFormProps) {
   const [customExercise, setCustomExercise] = useState({
     name: "",
     muscleGroup: "",
-    sets: "",
-    reps: "",
+    sets: "3",
+    reps: "10",
   })
   const [searchResults, setSearchResults] = useState<ExerciseResult[]>([])
   const [isSearching, setIsSearching] = useState(false)
@@ -121,8 +121,8 @@ export function ExerciseForm({ onAddExercise }: ExerciseFormProps) {
       setCustomExercise({
         name: "",
         muscleGroup: "",
-        sets: "",
-        reps: "",
+        sets: "3",
+        reps: "10",
       })
       setSearchResults([])
     }

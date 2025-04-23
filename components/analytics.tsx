@@ -213,15 +213,15 @@ export default function Analytics() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentWorkouts.map((workout) => (
-                <div key={workout.id} className="border rounded-lg p-4">
+              {recentWorkouts.map((workout, index) => (
+                <div key={`${workout.date}-${index}`} className="border rounded-lg p-4">
                   <div className="flex justify-between items-center mb-2">
                     <h3 className="font-medium">{format(new Date(workout.date), "MMMM d, yyyy")}</h3>
                     <span className="text-sm text-muted-foreground">{workout.exercises.length} exercises</span>
                   </div>
                   <div className="space-y-2">
                     {workout.exercises.map((exercise, index) => (
-                      <div key={index} className="text-sm">
+                      <div key={`${workout.date}-${exercise.name}-${index}`} className="text-sm">
                         <span className="font-medium">{exercise.name}</span>
                         <span className="text-muted-foreground">
                           {" "}
