@@ -55,11 +55,13 @@ export function ExerciseForm({ onAddExercise }: ExerciseFormProps) {
   const [selectedExercise, setSelectedExercise] = useState<string>("")
   const [predefinedSets, setPredefinedSets] = useState<string>("3") // Default value
   const [predefinedReps, setPredefinedReps] = useState<string>("10") // Default value
+  const [predefinedWeight, setPredefinedWeight] = useState<string>("0") // Default value
   const [customExercise, setCustomExercise] = useState({
     name: "",
     muscleGroup: "",
     sets: "3",
     reps: "10",
+    weight: "0"
   })
   const [searchResults, setSearchResults] = useState<ExerciseResult[]>([])
   const [isSearching, setIsSearching] = useState(false)
@@ -87,6 +89,7 @@ export function ExerciseForm({ onAddExercise }: ExerciseFormProps) {
         muscleGroup: selectedMuscleGroup,
         sets: Number.parseInt(predefinedSets),
         reps: Number.parseInt(predefinedReps),
+        weight: Number.parseFloat(predefinedWeight)
       })
       
       // Reset selected exercise but keep muscle group
@@ -116,6 +119,7 @@ export function ExerciseForm({ onAddExercise }: ExerciseFormProps) {
         muscleGroup: customExercise.muscleGroup,
         sets: Number.parseInt(customExercise.sets),
         reps: Number.parseInt(customExercise.reps),
+        weight: Number.parseFloat(customExercise.weight)
       })
 
       setCustomExercise({
@@ -123,6 +127,7 @@ export function ExerciseForm({ onAddExercise }: ExerciseFormProps) {
         muscleGroup: "",
         sets: "3",
         reps: "10",
+        weight: "0"
       })
       setSearchResults([])
     }
@@ -177,7 +182,7 @@ export function ExerciseForm({ onAddExercise }: ExerciseFormProps) {
 
             {selectedExercise && (
               <div className="mt-4 space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="predefinedSets">Sets</Label>
                     <Input
@@ -199,6 +204,19 @@ export function ExerciseForm({ onAddExercise }: ExerciseFormProps) {
                       value={predefinedReps}
                       onChange={(e) => setPredefinedReps(e.target.value)}
                       placeholder="10"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="predefinedWeight">Weight (kg)</Label>
+                    <Input
+                      id="predefinedWeight"
+                      type="number"
+                      min="0"
+                      step="0.5"
+                      value={predefinedWeight}
+                      onChange={(e) => setPredefinedWeight(e.target.value)}
+                      placeholder="0"
                     />
                   </div>
                 </div>
@@ -267,7 +285,7 @@ export function ExerciseForm({ onAddExercise }: ExerciseFormProps) {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="sets">Sets</Label>
                 <Input
@@ -289,6 +307,19 @@ export function ExerciseForm({ onAddExercise }: ExerciseFormProps) {
                   value={customExercise.reps}
                   onChange={(e) => setCustomExercise({ ...customExercise, reps: e.target.value })}
                   placeholder="10"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="weight">Weight (kg)</Label>
+                <Input
+                  id="weight"
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  value={customExercise.weight}
+                  onChange={(e) => setCustomExercise({ ...customExercise, weight: e.target.value })}
+                  placeholder="0"
                 />
               </div>
             </div>

@@ -10,6 +10,7 @@ export interface Exercise {
   muscleGroup: string
   sets: number
   reps: number
+  weight: number
 }
 
 export interface Workout {
