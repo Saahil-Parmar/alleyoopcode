@@ -16,7 +16,9 @@ import { Loader2 } from "lucide-react"
 const PREDEFINED_EXERCISES = {
   Chest: ["Bench Press", "Push-ups", "Chest Fly", "Incline Press", "Decline Press"],
   Back: ["Pull-ups", "Lat Pulldown", "Bent-over Row", "Deadlift", "T-Bar Row"],
-  Legs: ["Squats", "Leg Press", "Lunges", "Leg Extension", "Leg Curl"],
+  Glutes: ["Hip Thrusts", "Glute Bridge", "Romanian Deadlift", "Bulgarian Split Squats", "Step-ups"],
+  Hamstrings: ["Leg Curls", "Romanian Deadlift", "Good Mornings", "Nordic Curls", "Single-leg Deadlift"],
+  Quadriceps: ["Squats", "Leg Press", "Lunges", "Leg Extension", "Bulgarian Split Squats"],
   Shoulders: ["Shoulder Press", "Lateral Raise", "Front Raise", "Reverse Fly", "Shrugs"],
   Biceps: ["Bicep Curl", "Hammer Curl", "Preacher Curl", "Concentration Curl"],
   Triceps: ["Tricep Extension", "Tricep Pushdown", "Skull Crusher", "Dips"],
@@ -34,14 +36,14 @@ const MUSCLE_GROUP_MAPPING: Record<string, string> = {
   'lower_back': 'Back',
   'chest': 'Chest',
   'calves': 'Calves',
-  'quadriceps': 'Legs',
-  'hamstrings': 'Legs',
-  'glutes': 'Legs',
+  'quadriceps': 'Quadriceps',
+  'hamstrings': 'Hamstrings',
+  'glutes': 'Glutes',
   'traps': 'Shoulders',
   'shoulders': 'Shoulders',
   'forearms': 'Arms',
-  'abductors': 'Legs',
-  'adductors': 'Legs',
+  'abductors': 'Glutes',
+  'adductors': 'Hamstrings',
   'neck': 'Shoulders'
 }
 

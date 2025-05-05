@@ -60,7 +60,7 @@ export function MusclePhysiologyImage({ muscleSummary }: MusclePhysiologyImagePr
       <div className="w-full max-w-md bg-muted p-6 rounded-lg shadow-sm">
         <h2 className="text-2xl font-bold mb-4">CORE Areas</h2>
         <div className="space-y-4">
-          {["Back", "Shoulders", "Arms", "Legs"].map((muscle) => (
+          {["Back", "Shoulders", "Arms", "Glutes", "Hamstrings", "Quadriceps", "Calves"].map((muscle) => (
             <div key={muscle} className="space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-lg font-medium">{muscle}</span>

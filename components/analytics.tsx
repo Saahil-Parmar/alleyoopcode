@@ -5,8 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Trophy, AlertTriangle, Dumbbell, Clock } from "lucide-react"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { format, differenceInDays } from "date-fns"
+import { format, differenceInDays, subWeeks, startOfWeek, endOfWeek } from "date-fns"
 import { cn } from "@/lib/utils"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
+import { useState } from "react"
 
 // Exercise suggestions by muscle group
 const EXERCISE_SUGGESTIONS: Record<string, Array<{ name: string; description: string; videoId: string }>> = {
@@ -20,10 +23,20 @@ const EXERCISE_SUGGESTIONS: Record<string, Array<{ name: string; description: st
     { name: "Bent-over Rows", description: "4 sets of 10-12 reps", videoId: "G8l_8chR5BE" },
     { name: "Lat Pulldowns", description: "3 sets of 12-15 reps", videoId: "CAwf7n6Luuc" },
   ],
-  Legs: [
+  Glutes: [
+    { name: "Hip Thrusts", description: "4 sets of 10-12 reps", videoId: "m8Bk1t6hK_U" },
+    { name: "Glute Bridge", description: "3 sets of 12-15 reps", videoId: "OUgsJ8c8HtY" },
+    { name: "Romanian Deadlift", description: "4 sets of 8-10 reps", videoId: "JCXUYuzwNrM" },
+  ],
+  Hamstrings: [
+    { name: "Leg Curls", description: "3 sets of 12-15 reps", videoId: "1Tq3QdYUuHs" },
+    { name: "Nordic Curls", description: "3 sets of 8-10 reps", videoId: "3-4pKUhkzoQ" },
+    { name: "Good Mornings", description: "3 sets of 10-12 reps", videoId: "dEJ0FTm-CEk" },
+  ],
+  Quadriceps: [
     { name: "Squats", description: "4 sets of 8-10 reps", videoId: "YaXPRqUwItQ" },
-    { name: "Romanian Deadlifts", description: "3 sets of 10-12 reps", videoId: "JCXUYuzwNrM" },
     { name: "Leg Press", description: "3 sets of 12-15 reps", videoId: "IZxyjW7MPJQ" },
+    { name: "Bulgarian Split Squats", description: "3 sets of 10-12 reps per leg", videoId: "2C-uNgKwPLE" },
   ],
   Shoulders: [
     { name: "Overhead Press", description: "4 sets of 8-10 reps", videoId: "2yjwXTZQDDI" },
@@ -53,19 +66,56 @@ const EXERCISE_SUGGESTIONS: Record<string, Array<{ name: string; description: st
 
 export default function Analytics() {
   const { workouts, getMuscleSummary, getMostWorkedMuscle, getNotWorkedMuscles } = useWorkout()
+  const [showLastWeek, setShowLastWeek] = useState(false)
   const muscleSummary = getMuscleSummary()
   const mostWorkedMuscle = getMostWorkedMuscle()
   const notWorkedMuscles = getNotWorkedMuscles()
 
-  // Get workouts from the last 7 days
-  const recentWorkouts = workouts
-    .filter(workout => {
-      const workoutDate = new Date(workout.date)
-      const sevenDaysAgo = new Date()
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-      return workoutDate >= sevenDaysAgo
+  // Get workouts from the selected period
+  const getWorkoutsForPeriod = (isLastWeek: boolean) => {
+    const today = new Date()
+    const periodStart = isLastWeek 
+      ? subWeeks(today, 1) // 7 days ago
+      : new Date(today.setDate(today.getDate() - 7)) // Last 7 days
+
+    return workouts
+      .filter(workout => {
+        const workoutDate = new Date(workout.date)
+        return workoutDate >= periodStart && workoutDate <= new Date()
+      })
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  }
+
+  // Get muscle summary for the selected period
+  const getMuscleSummaryForPeriod = (isLastWeek: boolean) => {
+    const periodWorkouts = getWorkoutsForPeriod(isLastWeek)
+    const summary: Record<string, { sets: number; lastWorkoutDate: string }> = {}
+
+    periodWorkouts.forEach((workout) => {
+      workout.exercises.forEach((exercise) => {
+        const muscleGroup = exercise.muscleGroup
+
+        if (!summary[muscleGroup]) {
+          summary[muscleGroup] = {
+            sets: 0,
+            lastWorkoutDate: workout.date,
+          }
+        }
+
+        summary[muscleGroup].sets += exercise.sets
+
+        // Update last workout date if this workout is more recent
+        if (new Date(workout.date) > new Date(summary[muscleGroup].lastWorkoutDate)) {
+          summary[muscleGroup].lastWorkoutDate = workout.date
+        }
+      })
     })
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+
+    return summary
+  }
+
+  const selectedPeriodWorkouts = getWorkoutsForPeriod(showLastWeek)
+  const selectedPeriodMuscleSummary = getMuscleSummaryForPeriod(showLastWeek)
 
   // Function to get the last workout date for a muscle
   const getLastWorkoutInfo = (muscle: string) => {
@@ -195,7 +245,19 @@ export default function Analytics() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Workout Analytics</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>Workout Analytics</CardTitle>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="period-toggle"
+                checked={showLastWeek}
+                onCheckedChange={setShowLastWeek}
+              />
+              <Label htmlFor="period-toggle">
+                Last Seven Days
+              </Label>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
@@ -207,7 +269,7 @@ export default function Analytics() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {Object.entries(muscleSummary).map(([muscle, { sets, lastWorkoutDate }]) => (
+              {Object.entries(selectedPeriodMuscleSummary).map(([muscle, { sets, lastWorkoutDate }]) => (
                 <TableRow key={muscle}>
                   <TableCell>{muscle}</TableCell>
                   <TableCell className="text-right">{sets}</TableCell>
@@ -219,14 +281,14 @@ export default function Analytics() {
         </CardContent>
       </Card>
 
-      {recentWorkouts.length > 0 ? (
+      {selectedPeriodWorkouts.length > 0 ? (
         <Card>
           <CardHeader>
-            <CardTitle>Recent Workouts (Last 7 Days)</CardTitle>
+            <CardTitle>Workouts (Last Seven Days)</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentWorkouts.map((workout, index) => (
+              {selectedPeriodWorkouts.map((workout, index) => (
                 <div key={`${workout.date}-${index}`} className="border rounded-lg p-4">
                   <div className="flex justify-between items-center mb-2">
                     <h3 className="font-medium">{format(new Date(workout.date), "MMMM d, yyyy")}</h3>
@@ -251,11 +313,11 @@ export default function Analytics() {
       ) : (
         <Card>
           <CardHeader>
-            <CardTitle>Recent Workouts (Last 7 Days)</CardTitle>
+            <CardTitle>Workouts (Last Seven Days)</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground text-center py-4">
-              No workouts recorded in the last 7 days
+              No workouts recorded {showLastWeek ? "in the last seven days" : "last week"}
             </p>
           </CardContent>
         </Card>

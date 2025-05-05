@@ -27,7 +27,7 @@ export function MuscleVisualization({ muscleSummary }: MuscleVisualizationProps)
   }
 
   // Core muscle groups to display in the legend
-  const muscleGroups = ["Chest", "Back", "Legs", "Shoulders", "Arms", "Abs"]
+  const muscleGroups = ["Chest", "Back", "Glutes", "Hamstrings", "Quadriceps", "Calves", "Shoulders", "Arms", "Abs"]
 
   return (
     <div className="flex flex-col items-center space-y-6">
