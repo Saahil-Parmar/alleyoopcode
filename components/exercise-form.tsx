@@ -53,14 +53,21 @@ interface ExerciseFormProps {
 
 export function ExerciseForm({ onAddExercise }: ExerciseFormProps) {
   const [activeTab, setActiveTab] = useState("predefined")
+  const [customView, setCustomView] = useState("search")
   const [selectedMuscleGroup, setSelectedMuscleGroup] = useState<string>("")
   const [selectedExercise, setSelectedExercise] = useState<string>("")
-  const [predefinedSets, setPredefinedSets] = useState<string>("3") // Default value
-  const [predefinedReps, setPredefinedReps] = useState<string>("10") // Default value
-  const [predefinedWeight, setPredefinedWeight] = useState<string>("0") // Default value
+  const [predefinedSets, setPredefinedSets] = useState<string>("3")
+  const [predefinedReps, setPredefinedReps] = useState<string>("10")
+  const [predefinedWeight, setPredefinedWeight] = useState<string>("0")
   const [customExercise, setCustomExercise] = useState({
     name: "",
     muscleGroup: "",
+  })
+  const [manualExercise, setManualExercise] = useState({
+    name: "",
+    muscleGroup: "",
+  })
+  const [exerciseDetails, setExerciseDetails] = useState({
     sets: "3",
     reps: "10",
     weight: "0"
@@ -115,23 +122,47 @@ export function ExerciseForm({ onAddExercise }: ExerciseFormProps) {
   }
 
   const handleAddCustom = () => {
-    if (customExercise.name && customExercise.muscleGroup && customExercise.sets && customExercise.reps) {
+    if (customExercise.name && customExercise.muscleGroup && exerciseDetails.sets && exerciseDetails.reps) {
       onAddExercise({
         name: customExercise.name,
         muscleGroup: customExercise.muscleGroup,
-        sets: Number.parseInt(customExercise.sets),
-        reps: Number.parseInt(customExercise.reps),
-        weight: Number.parseFloat(customExercise.weight)
+        sets: Number.parseInt(exerciseDetails.sets),
+        reps: Number.parseInt(exerciseDetails.reps),
+        weight: Number.parseFloat(exerciseDetails.weight)
       })
 
       setCustomExercise({
         name: "",
         muscleGroup: "",
+      })
+      setExerciseDetails({
         sets: "3",
         reps: "10",
         weight: "0"
       })
       setSearchResults([])
+    }
+  }
+
+  const handleAddManual = () => {
+    if (manualExercise.name && manualExercise.muscleGroup && exerciseDetails.sets && exerciseDetails.reps) {
+      onAddExercise({
+        name: manualExercise.name,
+        muscleGroup: manualExercise.muscleGroup,
+        sets: Number.parseInt(exerciseDetails.sets),
+        reps: Number.parseInt(exerciseDetails.reps),
+        weight: Number.parseFloat(exerciseDetails.weight)
+      })
+
+      setManualExercise({
+        name: "",
+        muscleGroup: "",
+      })
+      setExerciseDetails({
+        sets: "3",
+        reps: "10",
+        weight: "0"
+      })
     }
   }
 
@@ -234,107 +265,196 @@ export function ExerciseForm({ onAddExercise }: ExerciseFormProps) {
             )}
           </TabsContent>
 
-          <TabsContent value="custom" className="space-y-4 mt-4">
-            <div className="space-y-2">
-              <Label htmlFor="exerciseName">Exercise Name</Label>
-              <div className="relative">
-                <Input
-                  id="exerciseName"
-                  value={customExercise.name}
-                  onChange={(e) => setCustomExercise({ ...customExercise, name: e.target.value })}
-                  placeholder="Search for an exercise..."
-                />
-                {isSearching && (
-                  <div className="absolute right-3 top-3">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  </div>
-                )}
-              </div>
-              
-              {searchResults.length > 0 && (
-                <div className="mt-2 border rounded-md divide-y max-h-[300px] overflow-y-auto">
-                  {searchResults.map((result, index) => (
-                    <button
-                      key={index}
-                      className="w-full px-4 py-3 text-left hover:bg-accent transition-colors"
-                      onClick={() => handleSelectExercise(result)}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-medium">{result.name}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {result.muscle.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} • {result.difficulty}
-                          </div>
-                        </div>
-                        <div className="text-xs text-muted-foreground capitalize">
-                          {result.equipment}
-                        </div>
+          <TabsContent value="custom" className="space-y-6 mt-4">
+            <Tabs value={customView} onValueChange={setCustomView}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="search">Search Exercise</TabsTrigger>
+                <TabsTrigger value="manual">Add Manually</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="search" className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="exerciseName">Exercise Name</Label>
+                  <div className="relative">
+                    <Input
+                      id="exerciseName"
+                      value={customExercise.name}
+                      onChange={(e) => setCustomExercise({ ...customExercise, name: e.target.value })}
+                      placeholder="Search for an exercise..."
+                    />
+                    {isSearching && (
+                      <div className="absolute right-3 top-3">
+                        <Loader2 className="h-4 w-4 animate-spin" />
                       </div>
-                    </button>
-                  ))}
+                    )}
+                  </div>
+                  
+                  {searchResults.length > 0 && (
+                    <div className="mt-2 border rounded-md divide-y max-h-[300px] overflow-y-auto">
+                      {searchResults.map((result, index) => (
+                        <button
+                          key={index}
+                          className="w-full px-4 py-3 text-left hover:bg-accent transition-colors"
+                          onClick={() => handleSelectExercise(result)}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="font-medium">{result.name}</div>
+                              <div className="text-sm text-muted-foreground">
+                                {result.muscle.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} • {result.difficulty}
+                              </div>
+                            </div>
+                            <div className="text-xs text-muted-foreground capitalize">
+                              {result.equipment}
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="muscleGroup">Target Muscle</Label>
-              <Input
-                id="muscleGroup"
-                value={customExercise.muscleGroup}
-                readOnly
-                className="bg-muted cursor-not-allowed"
-                placeholder="Will be set automatically from exercise selection"
-              />
-            </div>
+                <div className="space-y-2">
+                  <Label htmlFor="muscleGroup">Target Muscle</Label>
+                  <Input
+                    id="muscleGroup"
+                    value={customExercise.muscleGroup}
+                    readOnly
+                    className="bg-muted cursor-not-allowed"
+                    placeholder="Will be set automatically from exercise selection"
+                  />
+                </div>
 
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="sets">Sets</Label>
-                <Input
-                  id="sets"
-                  type="number"
-                  min="1"
-                  value={customExercise.sets}
-                  onChange={(e) => setCustomExercise({ ...customExercise, sets: e.target.value })}
-                  placeholder="3"
-                />
-              </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="sets">Sets</Label>
+                    <Input
+                      id="sets"
+                      type="number"
+                      min="1"
+                      value={exerciseDetails.sets}
+                      onChange={(e) => setExerciseDetails({ ...exerciseDetails, sets: e.target.value })}
+                      placeholder="3"
+                    />
+                  </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="reps">Reps</Label>
-                <Input
-                  id="reps"
-                  type="number"
-                  min="1"
-                  value={customExercise.reps}
-                  onChange={(e) => setCustomExercise({ ...customExercise, reps: e.target.value })}
-                  placeholder="10"
-                />
-              </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="reps">Reps</Label>
+                    <Input
+                      id="reps"
+                      type="number"
+                      min="1"
+                      value={exerciseDetails.reps}
+                      onChange={(e) => setExerciseDetails({ ...exerciseDetails, reps: e.target.value })}
+                      placeholder="10"
+                    />
+                  </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="weight">Weight (kg)</Label>
-                <Input
-                  id="weight"
-                  type="number"
-                  min="0"
-                  step="0.5"
-                  value={customExercise.weight}
-                  onChange={(e) => setCustomExercise({ ...customExercise, weight: e.target.value })}
-                  placeholder="0"
-                />
-              </div>
-            </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="weight">Weight (kg)</Label>
+                    <Input
+                      id="weight"
+                      type="number"
+                      min="0"
+                      step="0.5"
+                      value={exerciseDetails.weight}
+                      onChange={(e) => setExerciseDetails({ ...exerciseDetails, weight: e.target.value })}
+                      placeholder="0"
+                    />
+                  </div>
+                </div>
 
-            <Button
-              className="w-full mt-2"
-              onClick={handleAddCustom}
-              disabled={
-                !customExercise.name || !customExercise.muscleGroup || !customExercise.sets || !customExercise.reps
-              }
-            >
-              Add Exercise
-            </Button>
+                <Button
+                  className="w-full mt-2"
+                  onClick={handleAddCustom}
+                  disabled={
+                    !customExercise.name || !customExercise.muscleGroup || !exerciseDetails.sets || !exerciseDetails.reps
+                  }
+                >
+                  Add Exercise
+                </Button>
+              </TabsContent>
+
+              <TabsContent value="manual" className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="manualExerciseName">Exercise Name</Label>
+                  <Input
+                    id="manualExerciseName"
+                    value={manualExercise.name}
+                    onChange={(e) => setManualExercise({ ...manualExercise, name: e.target.value })}
+                    placeholder="Enter exercise name manually"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="manualMuscleGroup">Target Muscle</Label>
+                  <Select
+                    value={manualExercise.muscleGroup}
+                    onValueChange={(value) => setManualExercise({ ...manualExercise, muscleGroup: value })}
+                  >
+                    <SelectTrigger id="manualMuscleGroup">
+                      <SelectValue placeholder="Select muscle group" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.keys(PREDEFINED_EXERCISES).map((group) => (
+                        <SelectItem key={group} value={group}>
+                          {group}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="sets">Sets</Label>
+                    <Input
+                      id="sets"
+                      type="number"
+                      min="1"
+                      value={exerciseDetails.sets}
+                      onChange={(e) => setExerciseDetails({ ...exerciseDetails, sets: e.target.value })}
+                      placeholder="3"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="reps">Reps</Label>
+                    <Input
+                      id="reps"
+                      type="number"
+                      min="1"
+                      value={exerciseDetails.reps}
+                      onChange={(e) => setExerciseDetails({ ...exerciseDetails, reps: e.target.value })}
+                      placeholder="10"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="weight">Weight (kg)</Label>
+                    <Input
+                      id="weight"
+                      type="number"
+                      min="0"
+                      step="0.5"
+                      value={exerciseDetails.weight}
+                      onChange={(e) => setExerciseDetails({ ...exerciseDetails, weight: e.target.value })}
+                      placeholder="0"
+                    />
+                  </div>
+                </div>
+
+                <Button
+                  className="w-full mt-2"
+                  onClick={handleAddManual}
+                  disabled={
+                    !manualExercise.name || !manualExercise.muscleGroup || !exerciseDetails.sets || !exerciseDetails.reps
+                  }
+                >
+                  Add Manual Exercise
+                </Button>
+              </TabsContent>
+            </Tabs>
           </TabsContent>
         </Tabs>
       </CardContent>
