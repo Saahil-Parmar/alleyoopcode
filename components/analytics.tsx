@@ -24,8 +24,8 @@ const EXERCISE_SUGGESTIONS: Record<string, Array<{ name: string; description: st
     { name: "Lat Pulldowns", description: "3 sets of 12-15 reps", videoId: "CAwf7n6Luuc" },
   ],
   Glutes: [
-    { name: "Hip Thrusts", description: "4 sets of 10-12 reps", videoId: "m8Bk1t6hK_U" },
-    { name: "Glute Bridge", description: "3 sets of 12-15 reps", videoId: "OUgsJ8c8HtY" },
+    { name: "Hip Thrusts", description: "4 sets of 10-12 reps", videoId: "pUdIL5x0fWg" },
+    { name: "Glute Bridge", description: "3 sets of 12-15 reps", videoId: "Xp33YgPZgns" },
     { name: "Romanian Deadlift", description: "4 sets of 8-10 reps", videoId: "JCXUYuzwNrM" },
   ],
   Hamstrings: [
