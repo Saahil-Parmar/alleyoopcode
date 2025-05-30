@@ -92,7 +92,7 @@ export default function WorkoutEntry() {
                   <div>
                     <p className="font-medium">{exercise.name}</p>
                     <p className="text-sm text-muted-foreground">
-                      {exercise.muscleGroup} • {exercise.sets} sets × {exercise.reps} reps
+                      {exercise.muscleGroup} • {exercise.sets} sets × {exercise.reps} reps × {exercise.weight} kg
                     </p>
                   </div>
                   <Button variant="ghost" size="sm" onClick={() => handleRemoveExercise(index)}>

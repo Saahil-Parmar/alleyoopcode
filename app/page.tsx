@@ -35,7 +35,7 @@ export default function Home() {
           <button
             onClick={() => setActiveTab("dashboard")}
             className={cn(
-              "px-6 py-2 rounded-lg border transition-colors",
+              "px-6 py-3 rounded-lg border transition-colors font-medium",
               activeTab === "dashboard"
                 ? "bg-primary text-primary-foreground hover:bg-primary/90"
                 : "hover:bg-muted"
@@ -46,7 +46,7 @@ export default function Home() {
           <button
             onClick={() => setActiveTab("workout")}
             className={cn(
-              "px-6 py-2 rounded-lg border transition-colors",
+              "px-6 py-3 rounded-lg border transition-colors font-medium",
               activeTab === "workout"
                 ? "bg-primary text-primary-foreground hover:bg-primary/90"
                 : "hover:bg-muted"
@@ -57,7 +57,7 @@ export default function Home() {
           <button
             onClick={() => setActiveTab("analytics")}
             className={cn(
-              "px-6 py-2 rounded-lg border transition-colors",
+              "px-6 py-3 rounded-lg border transition-colors font-medium",
               activeTab === "analytics"
                 ? "bg-primary text-primary-foreground hover:bg-primary/90"
                 : "hover:bg-muted"

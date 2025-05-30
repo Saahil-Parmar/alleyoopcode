@@ -9,13 +9,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 const predefinedExercises = [
   { name: "Push-ups", muscleGroup: "Chest" },
-  { name: "Squats", muscleGroup: "Legs" },
+  { name: "Squats", muscleGroup: "Quadriceps" },
   { name: "Pull-ups", muscleGroup: "Back" },
   { name: "Shoulder Press", muscleGroup: "Shoulders" },
   { name: "Bicep Curls", muscleGroup: "Arms" },
   { name: "Tricep Extensions", muscleGroup: "Arms" },
   { name: "Crunches", muscleGroup: "Abs" },
   { name: "Calf Raises", muscleGroup: "Calves" },
+  { name: "Hip Thrusts", muscleGroup: "Glutes" },
+  { name: "Leg Curls", muscleGroup: "Hamstrings" },
 ]
 
 interface ExerciseSelectionProps {
@@ -107,11 +109,13 @@ export function ExerciseSelection({ exercises, onExercisesChange }: ExerciseSele
               <SelectContent>
                 <SelectItem value="Chest">Chest</SelectItem>
                 <SelectItem value="Back">Back</SelectItem>
-                <SelectItem value="Legs">Legs</SelectItem>
+                <SelectItem value="Glutes">Glutes</SelectItem>
+                <SelectItem value="Hamstrings">Hamstrings</SelectItem>
+                <SelectItem value="Quadriceps">Quadriceps</SelectItem>
+                <SelectItem value="Calves">Calves</SelectItem>
                 <SelectItem value="Shoulders">Shoulders</SelectItem>
                 <SelectItem value="Arms">Arms</SelectItem>
                 <SelectItem value="Abs">Abs</SelectItem>
-                <SelectItem value="Calves">Calves</SelectItem>
               </SelectContent>
             </Select>
           </div>

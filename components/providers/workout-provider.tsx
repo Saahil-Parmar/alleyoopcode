@@ -10,6 +10,7 @@ export interface Exercise {
   muscleGroup: string
   sets: number
   reps: number
+  weight: number
 }
 
 export interface Workout {
@@ -30,7 +31,7 @@ interface WorkoutContextType {
 const WorkoutContext = createContext<WorkoutContextType | undefined>(undefined)
 
 // List of standard muscle groups
-const STANDARD_MUSCLE_GROUPS = ["Chest", "Back", "Legs", "Shoulders", "Biceps", "Triceps", "Abs", "Calves"]
+const STANDARD_MUSCLE_GROUPS = ["Chest", "Back", "Glutes", "Hamstrings", "Quadriceps", "Calves", "Shoulders", "Biceps", "Triceps", "Abs"]
 
 // Helper to normalize muscle group names
 export const normalizeMuscleGroup = (muscleGroup: string): string => {

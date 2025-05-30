@@ -5,68 +5,117 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Trophy, AlertTriangle, Dumbbell, Clock } from "lucide-react"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { format, differenceInDays } from "date-fns"
+import { format, differenceInDays, subWeeks, startOfWeek, endOfWeek } from "date-fns"
 import { cn } from "@/lib/utils"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
+import { useState } from "react"
 
 // Exercise suggestions by muscle group
-const EXERCISE_SUGGESTIONS: Record<string, Array<{ name: string; description: string }>> = {
+const EXERCISE_SUGGESTIONS: Record<string, Array<{ name: string; description: string; videoId: string }>> = {
   Chest: [
-    { name: "Bench Press", description: "4 sets of 8-12 reps" },
-    { name: "Incline Dumbbell Press", description: "3 sets of 10-12 reps" },
-    { name: "Cable Fly", description: "3 sets of 12-15 reps" },
+    { name: "Bench Press", description: "4 sets of 8-12 reps", videoId: "rT7DgCr-3pg" },
+    { name: "Incline Dumbbell Press", description: "3 sets of 10-12 reps", videoId: "8iPEnn-ltC8" },
+    { name: "Cable Fly", description: "3 sets of 12-15 reps", videoId: "Iwe6AmxVf7o" },
   ],
   Back: [
-    { name: "Pull-ups", description: "3 sets to failure" },
-    { name: "Bent-over Rows", description: "4 sets of 10-12 reps" },
-    { name: "Lat Pulldowns", description: "3 sets of 12-15 reps" },
+    { name: "Pull-ups", description: "3 sets to failure", videoId: "eGo4IYlbE5g" },
+    { name: "Bent-over Rows", description: "4 sets of 10-12 reps", videoId: "G8l_8chR5BE" },
+    { name: "Lat Pulldowns", description: "3 sets of 12-15 reps", videoId: "CAwf7n6Luuc" },
   ],
-  Legs: [
-    { name: "Squats", description: "4 sets of 8-10 reps" },
-    { name: "Romanian Deadlifts", description: "3 sets of 10-12 reps" },
-    { name: "Leg Press", description: "3 sets of 12-15 reps" },
+  Glutes: [
+    { name: "Hip Thrusts", description: "4 sets of 10-12 reps", videoId: "pUdIL5x0fWg" },
+    { name: "Glute Bridge", description: "3 sets of 12-15 reps", videoId: "Xp33YgPZgns" },
+    { name: "Romanian Deadlift", description: "4 sets of 8-10 reps", videoId: "JCXUYuzwNrM" },
+  ],
+  Hamstrings: [
+    { name: "Leg Curls", description: "3 sets of 12-15 reps", videoId: "1Tq3QdYUuHs" },
+    { name: "Nordic Curls", description: "3 sets of 8-10 reps", videoId: "3-4pKUhkzoQ" },
+    { name: "Good Mornings", description: "3 sets of 10-12 reps", videoId: "dEJ0FTm-CEk" },
+  ],
+  Quadriceps: [
+    { name: "Squats", description: "4 sets of 8-10 reps", videoId: "YaXPRqUwItQ" },
+    { name: "Leg Press", description: "3 sets of 12-15 reps", videoId: "IZxyjW7MPJQ" },
+    { name: "Bulgarian Split Squats", description: "3 sets of 10-12 reps per leg", videoId: "2C-uNgKwPLE" },
   ],
   Shoulders: [
-    { name: "Overhead Press", description: "4 sets of 8-10 reps" },
-    { name: "Lateral Raises", description: "3 sets of 12-15 reps" },
-    { name: "Face Pulls", description: "3 sets of 15-20 reps" },
+    { name: "Overhead Press", description: "4 sets of 8-10 reps", videoId: "2yjwXTZQDDI" },
+    { name: "Lateral Raises", description: "3 sets of 12-15 reps", videoId: "3VcKaXpzqRo" },
+    { name: "Face Pulls", description: "3 sets of 15-20 reps", videoId: "rep-qVOkqgk" },
   ],
   Biceps: [
-    { name: "Barbell Curls", description: "3 sets of 10-12 reps" },
-    { name: "Hammer Curls", description: "3 sets of 12-15 reps" },
-    { name: "Preacher Curls", description: "3 sets of 10-12 reps" },
+    { name: "Barbell Curls", description: "3 sets of 10-12 reps", videoId: "kwG2ipFRgfo" },
+    { name: "Hammer Curls", description: "3 sets of 12-15 reps", videoId: "TwD-YGVP4Bk" },
+    { name: "Preacher Curls", description: "3 sets of 10-12 reps", videoId: "fIWP-FRFNU0" },
   ],
   Triceps: [
-    { name: "Tricep Pushdowns", description: "3 sets of 12-15 reps" },
-    { name: "Skull Crushers", description: "3 sets of 10-12 reps" },
-    { name: "Dips", description: "3 sets to failure" },
+    { name: "Tricep Pushdowns", description: "3 sets of 12-15 reps", videoId: "2-LAMcpzODU" },
+    { name: "Skull Crushers", description: "3 sets of 10-12 reps", videoId: "d_KZxkY_0cM" },
+    { name: "Dips", description: "3 sets to failure", videoId: "2z8JmcrW-As" },
   ],
   Abs: [
-    { name: "Hanging Leg Raises", description: "3 sets of 12-15 reps" },
-    { name: "Cable Crunches", description: "3 sets of 15-20 reps" },
-    { name: "Plank", description: "3 sets of 30-60 seconds" },
+    { name: "Hanging Leg Raises", description: "3 sets of 12-15 reps", videoId: "JB2oyawG9KI" },
+    { name: "Cable Crunches", description: "3 sets of 15-20 reps", videoId: "6GMKPQVERzw" },
+    { name: "Plank", description: "3 sets of 30-60 seconds", videoId: "pSHjTRCQxIw" },
   ],
   Calves: [
-    { name: "Standing Calf Raises", description: "4 sets of 15-20 reps" },
-    { name: "Seated Calf Raises", description: "3 sets of 15-20 reps" },
-    { name: "Calf Press on Leg Press", description: "3 sets of 15-20 reps" },
+    { name: "Standing Calf Raises", description: "4 sets of 15-20 reps", videoId: "3UWi44yN-wM" },
+    { name: "Calf Press on Leg Press", description: "3 sets of 15-20 reps", videoId: "0tn5K9NlCfo" },
   ],
 }
 
 export default function Analytics() {
   const { workouts, getMuscleSummary, getMostWorkedMuscle, getNotWorkedMuscles } = useWorkout()
+  const [showLastWeek, setShowLastWeek] = useState(false)
   const muscleSummary = getMuscleSummary()
   const mostWorkedMuscle = getMostWorkedMuscle()
   const notWorkedMuscles = getNotWorkedMuscles()
 
-  // Get workouts from the last 7 days
-  const recentWorkouts = workouts
-    .filter(workout => {
-      const workoutDate = new Date(workout.date)
-      const sevenDaysAgo = new Date()
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-      return workoutDate >= sevenDaysAgo
+  // Get workouts from the selected period
+  const getWorkoutsForPeriod = (isLastWeek: boolean) => {
+    const today = new Date()
+    const periodStart = isLastWeek 
+      ? subWeeks(today, 1) // 7 days ago
+      : new Date(today.setDate(today.getDate() - 7)) // Last 7 days
+
+    return workouts
+      .filter(workout => {
+        const workoutDate = new Date(workout.date)
+        return workoutDate >= periodStart && workoutDate <= new Date()
+      })
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  }
+
+  // Get muscle summary for the selected period
+  const getMuscleSummaryForPeriod = (isLastWeek: boolean) => {
+    const periodWorkouts = getWorkoutsForPeriod(isLastWeek)
+    const summary: Record<string, { sets: number; lastWorkoutDate: string }> = {}
+
+    periodWorkouts.forEach((workout) => {
+      workout.exercises.forEach((exercise) => {
+        const muscleGroup = exercise.muscleGroup
+
+        if (!summary[muscleGroup]) {
+          summary[muscleGroup] = {
+            sets: 0,
+            lastWorkoutDate: workout.date,
+          }
+        }
+
+        summary[muscleGroup].sets += exercise.sets
+
+        // Update last workout date if this workout is more recent
+        if (new Date(workout.date) > new Date(summary[muscleGroup].lastWorkoutDate)) {
+          summary[muscleGroup].lastWorkoutDate = workout.date
+        }
+      })
     })
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+
+    return summary
+  }
+
+  const selectedPeriodWorkouts = getWorkoutsForPeriod(showLastWeek)
+  const selectedPeriodMuscleSummary = getMuscleSummaryForPeriod(showLastWeek)
 
   // Function to get the last workout date for a muscle
   const getLastWorkoutInfo = (muscle: string) => {
@@ -168,6 +217,20 @@ export default function Analytics() {
                           <div key={index} className="border-l-2 border-primary pl-4">
                             <h4 className="font-medium">{exercise.name}</h4>
                             <p className="text-sm text-muted-foreground">{exercise.description}</p>
+                            <div className="mt-2">
+                              <a
+                                href={`https://www.youtube.com/watch?v=${exercise.videoId}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block"
+                              >
+                                <img
+                                  src={`https://img.youtube.com/vi/${exercise.videoId}/mqdefault.jpg`}
+                                  alt={`${exercise.name} tutorial`}
+                                  className="w-full max-w-[320px] rounded-lg shadow-md hover:opacity-90 transition-opacity"
+                                />
+                              </a>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -182,7 +245,19 @@ export default function Analytics() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Workout Analytics</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>Workout Analytics</CardTitle>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="period-toggle"
+                checked={showLastWeek}
+                onCheckedChange={setShowLastWeek}
+              />
+              <Label htmlFor="period-toggle">
+                Last Seven Days
+              </Label>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
@@ -194,7 +269,7 @@ export default function Analytics() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {Object.entries(muscleSummary).map(([muscle, { sets, lastWorkoutDate }]) => (
+              {Object.entries(selectedPeriodMuscleSummary).map(([muscle, { sets, lastWorkoutDate }]) => (
                 <TableRow key={muscle}>
                   <TableCell>{muscle}</TableCell>
                   <TableCell className="text-right">{sets}</TableCell>
@@ -206,26 +281,26 @@ export default function Analytics() {
         </CardContent>
       </Card>
 
-      {recentWorkouts.length > 0 ? (
+      {selectedPeriodWorkouts.length > 0 ? (
         <Card>
           <CardHeader>
-            <CardTitle>Recent Workouts (Last 7 Days)</CardTitle>
+            <CardTitle>Workouts (Last Seven Days)</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentWorkouts.map((workout) => (
-                <div key={workout.id} className="border rounded-lg p-4">
+              {selectedPeriodWorkouts.map((workout, index) => (
+                <div key={`${workout.date}-${index}`} className="border rounded-lg p-4">
                   <div className="flex justify-between items-center mb-2">
                     <h3 className="font-medium">{format(new Date(workout.date), "MMMM d, yyyy")}</h3>
                     <span className="text-sm text-muted-foreground">{workout.exercises.length} exercises</span>
                   </div>
                   <div className="space-y-2">
                     {workout.exercises.map((exercise, index) => (
-                      <div key={index} className="text-sm">
+                      <div key={`${workout.date}-${exercise.name}-${index}`} className="text-sm">
                         <span className="font-medium">{exercise.name}</span>
                         <span className="text-muted-foreground">
                           {" "}
-                          - {exercise.sets} sets × {exercise.reps} reps
+                          - {exercise.sets} sets × {exercise.reps} reps × {exercise.weight} kg
                         </span>
                       </div>
                     ))}
@@ -238,11 +313,11 @@ export default function Analytics() {
       ) : (
         <Card>
           <CardHeader>
-            <CardTitle>Recent Workouts (Last 7 Days)</CardTitle>
+            <CardTitle>Workouts (Last Seven Days)</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground text-center py-4">
-              No workouts recorded in the last 7 days
+              No workouts recorded {showLastWeek ? "in the last seven days" : "last week"}
             </p>
           </CardContent>
         </Card>
